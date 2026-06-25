@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>English Path</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background: #f8fafc; padding: 16px; padding-bottom: 80px; color: #1e293b; }
+
+.card { background: white; padding: 20px; border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 16px; }
+.header { background: #6366f1; padding: 24px 20px; border-radius: 28px; color: white; margin-bottom: 20px; text-align: center; }
+.header h1 { font-size: 24px; margin-bottom: 12px; }
+
+.stats-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; }
+.stat { background: rgba(255,255,255,0.2); padding: 8px 14px; border-radius: 30px; font-size: 14px; font-weight: bold; }
+
+.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0 20px 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.05); border-top-left-radius: 24px; border-top-right-radius: 24px; z-index: 100; }
+.nav-btn { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 12px; color: #94a3b8; cursor: pointer; padding: 4px 8px; }
+.nav-btn span { font-size: 22px; margin-bottom: 4px; }
+.nav-btn.active { color: #6366f1; font-weight: bold; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+.btn-primary { background: #6366f1; color: white; border: none; padding: 14px; border-radius: 16px; width: 100%; font-weight: bold; font-size: 16px; margin: 6px 0; cursor: pointer; }
+.btn-success { background: #22c55e; color: white; border: none; padding: 14px; border-radius: 16px; width: 100%; font-weight: bold; font-size: 16px; margin: 6px 0; cursor: pointer; }
+.btn-danger { background: #ef4444; color: white; border: none; padding: 14px; border-radius: 16px; width: 100%; font-weight: bold; font-size: 16px; margin: 6px 0; cursor: pointer; }
+.btn-warning { background: #f59e0b; color: white; border: none; padding: 14px; border-radius: 16px; width: 100%; font-weight: bold; font-size: 16px; margin: 6px 0; cursor: pointer; }
+.btn-outline { background: transparent; border: 2px solid #6366f1; color: #6366f1; padding: 12px 20px; border-radius: 16px; font-weight: bold; cursor: pointer; width: 100%; margin: 6px 0; font-size: 16px; }
+.btn-ai { background: #8b5cf6; color: white; border: none; padding: 12px; border-radius: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 15px; }
+
+#word { font-size: 32px; font-weight: bold; text-align: center; margin: 20px 0; }
+.xpBar { width: 100%; height: 12px; background: #e2e8f0; border-radius: 20px; overflow: hidden; margin: 10px 0; }
+.xpFill { height: 100%; width: 0%; background: #58cc02; transition: 0.4s; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.quiz-btn { display: block; width: 100%; background: #e2e8f0; border: none; padding: 14px; border-radius: 14px; margin: 8px 0; font-weight: bold; cursor: pointer; text-align: center; font-size: 16px; }
+.quiz-btn.correct { background: #22c55e; color: white; }
+.quiz-btn.wrong { background: #ef4444; color: white; }
+.quiz-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.word-option-btn { display: block; width: 100%; background: #e2e8f0; border: none; padding: 14px; border-radius: 14px; margin: 8px 0; font-weight: bold; cursor: pointer; text-align: center; font-size: 16px; }
+.word-option-btn.correct { background: #22c55e; color: white; }
+.word-option-btn.wrong { background: #ef4444; color: white; }
+.word-option-btn:disabled { opacity: 0.6; }
+
+.finish-btn { background: #ef4444; color: white; border: none; padding: 14px; border-radius: 16px; width: 100%; font-weight: bold; font-size: 16px;cursor: pointer; margin-top: 15px; }
+
+/* Блок с правилами */
+#explainBox { background: #f0f4ff; border-left: 5px solid #8b5cf6; padding: 18px; border-radius: 12px; margin-top: 15px; font-size: 15px; line-height: 1.6; display: none; text-align: left; color: #1e293b; }
+
+/* Экран входа */
+#loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; display: flex; justify-content: center; align-items: center; z-index: 999; flex-direction: column; padding: 20px; }
+#loginScreen h1 { font-size: 32px; margin-bottom: 20px; color: #6366f1; }
+.login-card { background: white; padding: 40px 20px; border-radius: 24px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.login-card input { width: 100%; padding: 14px; border-radius: 16px; border: 1px solid #e2e8f0; margin: 10px 0; font-size: 16px; outline: none; text-align: center; }
+.level-select { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 15px 0; }
+.level-select button { padding: 10px 15px; border: 2px solid #e2e8f0; border-radius: 30px; background: white; font-weight: bold; cursor: pointer; flex: 1 0 30%; }
+.level-select button.active { border-color: #6366f1; background: #6366f1; color: white; }
+</style>
+</head>
+<body>
+
+<!-- ЭКРАН ВХОДА -->
+<div id="loginScreen">
+    <h1>English Path</h1>
+    <div class="login-card">
+        <h2 style="margin-bottom: 15px;">Ваш профиль</h2>
+        <input type="text" id="profileInput" placeholder="Введите ваше имя" autocomplete="off">
+        <p style="color: #94a3b8; margin: 10px 0; font-size: 14px;">Выберите ваш текущий уровень:</p>
+        <div class="level-select" id="levelSelect">
+            <button onclick="chooseLevel(this, 'A0')">A0</button>
+            <button onclick="chooseLevel(this, 'A1')">A1</button>
+            <button onclick="chooseLevel(this, 'A2')">A2</button>
+            <button onclick="chooseLevel(this, 'B1')">B1</button>
+            <button onclick="chooseLevel(this, 'B2')">B2</button>
+            <button onclick="chooseLevel(this, 'C1')">C1</button>
+        </div>
+        <button class="btn-primary" onclick="enterApp()" style="margin-top: 15px;">Начать обучение</button>
+    </div>
+</div>
+
+<!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+<div id="app" style="display: none;">
+    <div class="header">
+        <h1>English Path</h1>
+        <div class="stats-row">
+            <div class="stat"> <span id="userLevelText">A0</span></div>
+            <div class="stat"> <span id="xpText">0</span> XP</div>
+            <div class="stat"> <span id="learnedCountText">0</span> слов</div>
+            <div class="stat"> <span id="streakText">0</span> дн.</div>
+        </div>
+        <div class="xpBar"><div id="xpFill" class="xpFill" style="width: 0%;"></div></div>
+        <div style="font-size: 12px; margin-top: 5px; opacity: 0.8;" id="progressToNext">До след. уровня: 0 XP, 0 слов</div>
+    </div>
+
+    <div id="wordsSection" class="section active">
+        <div class="card" style="text-align: center;">
+            <p id="word" style="color: #6366f1; font-size: 24px; margin-bottom: 10px;">Загрузка...</p>
+            <div class="grid-3">
+                <button class="btn-outline" onclick="showTranslation()"> Перевод</button>
+                <button class="btn-primary" onclick="speakWord()"> Слушать</button>
+                <button class="btn-warning" onclick="nextWord()"> Дальше</button>
+            </div>
+            <div class="grid-2" style="margin-top: 10px;">
+                <button class="btn-success" id="btnKnow" onclick="knowWord()"> Знаю</button>
+                <button class="btn-danger" id="btnDontKnow" onclick="dontKnowWord()"> Не знаю</button>
+            </div>
+            <p id="translation" style="margin-top: 15px; font-size: 20px; font-weight: bold; color: #059669;"></p>
+        </div>
+    </div>
+
+    <div id="grammarSection" class="section">
+        <div class="card">
+            <h2> Модули грамматики</h2>
+            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 10px;">Модули открываются по мере повышения вашего уровня.</p>
+            <div id="topicList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            <div id="grammarBox" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                <p style="color: #94a3b8; text-align: center;">Выберите Модуль выше</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="practiceSection" class="section">
+        <div class="card">
+            <h2> Мини-игры</h2>
+            <p style="color: #94a3b8; margin-bottom: 10px;">Никаких повторов, пока не пройдете все слова!</p>
+            <div class="grid-2">
+                <button class="btn-primary" onclick="startGame('guess')"> Угадай перевод</button>
+                <button class="btn-success" onclick="startGame('wordornot')"> Слово или нет?</button>
+                <button class="btn-warning" onclick="startGame('truefalse')"> Правда или ложь?</button>
+            </div>
+            <div id="practiceBox" style="margin-top: 15px; min-height: 150px;">
+                <p style="text-align: center; color: #94a3b8;">Выберите игру выше!</p>
+            </div>
+            <button class="finish-btn" onclick="stopPractice()" style="display: none; margin-top: 15px;" id="stopPracticeBtn"> Закончить</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="openTab('words')"><span>📚</span> Слова</button>
+        <button class="nav-btn" onclick="openTab('grammar')"><span>📖</span> Модули</button>
+        <button class="nav-btn" onclick="openTab('practice')"><span>🎮</span> Игры</button>
+    </div>
+</div>
+
+<script>
+// ПЕРЕМЕННЫЕ
+var profileName = '';
+var currentUserLevel = 'A0';
+var xp = 0;
+var levelIndex = 0;
+var streak = 0;
+var lastVisit = '';
+var know = 0;
+var learnedWords = [];
+var hardWords = [];
+var words = [];
+var current = 0;
+var isProcessing = false;
+
+var LEVELS = ['A0', 'A1', 'A2', 'B1', 'B2', 'C1'];
+
+// БОЛЬШОЙ СЛОВАРЬ (Более 1000 слов - основа)
+var FULL_WORD_BANK = [
+    {english:'hello', russian:'привет', level:'A0'}, {english:'goodbye', russian:'до свидания', level:'A0'},
+    {english:'yes', russian:'да', level:'A0'}, {english:'no', russian:'нет', level:'A0'},
+    {english:'please', russian:'пожалуйста', level:'A0'}, {english:'thank you', russian:'спасибо', level:'A0'},
+    {english:'I', russian:'я', level:'A0'}, {english:'you', russian:'ты/вы', level:'A0'},
+    {english:'he', russian:'он', level:'A0'}, {english:'she', russian:'она', level:'A0'},
+    {english:'we', russian:'мы', level:'A0'}, {english:'they', russian:'они', level:'A0'},
+    {english:'apple', russian:'яблоко', level:'A1'}, {english:'cat', russian:'кошка', level:'A1'},
+    {english:'dog', russian:'собака', level:'A1'}, {english:'house', russian:'дом', level:'A1'},
+    {english:'car', russian:'машина', level:'A1'}, {english:'book', russian:'книга', level:'A1'},
+    {english:'school', russian:'школа', level:'A1'}, {english:'friend', russian:'друг', level:'A1'},
+    {english:'family', russian:'семья', level:'A1'}, {english:'water', russian:'вода', level:'A1'},
+    {english:'morning', russian:'утро', level:'A1'}, {english:'evening', russian:'вечер', level:'A1'},
+    {english:'night', russian:'ночь', level:'A1'}, {english:'sun', russian:'солнце', level:'A1'},
+    {english:'moon', russian:'луна', level:'A1'}, {english:'star', russian:'звезда', level:'A1'},
+    {english:'sky', russian:'небо', level:'A1'}, {english:'earth', russian:'земля', level:'A1'},
+    {english:'people', russian:'люди', level:'A1'}, {english:'man', russian:'мужчина', level:'A1'},
+    {english:'woman', russian:'женщина', level:'A1'}, {english:'child', russian:'ребенок', level:'A1'},
+    {english:'city', russian:'город', level:'A1'}, {english:'country', russian:'страна', level:'A1'},
+    {english:'name', russian:'имя', level:'A1'}, {english:'time', russian:'время', level:'A1'},
+    {english:'day', russian:'день', level:'A1'}, {english:'week', russian:'неделя', level:'A1'},
+    {english:'month', russian:'месяц', level:'A1'}, {english:'year', russian:'год', level:'A1'},
+    {english:'work', russian:'работа', level:'A1'}, {english:'food', russian:'еда', level:'A1'},
+    {english:'think', russian:'думать', level:'A2'}, {english:'know', russian:'знать', level:'A2'},
+    {english:'want', russian:'хотеть', level:'A2'}, {english:'need', russian:'нуждаться', level:'A2'},
+    {english:'have', russian:'иметь', level:'A2'}, {english:'go', russian:'идти', level:'A2'},
+    {english:'come', russian:'приходить', level:'A2'}, {english:'see', russian:'видеть', level:'A2'},
+    {english:'make', russian:'делать', level:'A2'}, {english:'feel', russian:'чувствовать', level:'A2'},
+    {english:'become', russian:'становиться', level:'A2'}, {english:'leave', russian:'покидать', level:'A2'},
+    {english:'find', russian:'находить', level:'A2'}, {english:'give', russian:'давать', level:'A2'},
+    {english:'tell', russian:'рассказывать', level:'A2'}, {english:'ask', russian:'спрашивать', level:'A2'},
+    {english:'help', russian:'помогать', level:'A2'}, {english:'love', russian:'любить', level:'A2'},
+    {english:'hate', russian:'ненавидеть', level:'A2'}, {english:'play', russian:'играть', level:'A2'},
+    {english:'read', russian:'читать', level:'A2'}, {english:'write', russian:'писать', level:'A2'},
+    {english:'speak', russian:'говорить', level:'A2'}, {english:'listen', russian:'слушать', level:'A2'},
+    {english:'watch', russian:'смотреть', level:'A2'}, {english:'travel', russian:'путешествовать', level:'A2'},
+    {english:'achieve', russian:'достигать', level:'B1'}, {english:'improve', russian:'улучшать', level:'B1'},
+    {english:'determine', russian:'определять', level:'B1'}, {english:'include', russian:'включать', level:'B1'},
+    {english:'experience', russian:'опыт', level:'B1'}, {english:'important', russian:'важный', level:'B1'},
+    {english:'develop', russian:'развивать', level:'B1'}, {english:'understand', russian:'понимать', level:'B1'},
+    {english:'support', russian:'поддерживать', level:'B1'}, {english:'provide', russian:'предоставлять', level:'B1'},
+    {english:'consider', russian:'рассматривать', level:'B1'}, {english:'approach', russian:'приближаться', level:'B1'},
+    {english:'establish', russian:'устанавливать', level:'B1'}, {english:'require', russian:'требовать', level:'B1'},
+    {english:'manage', russian:'управлять', level:'B1'}, {english:'perform', russian:'выполнять', level:'B1'},
+    {english:'thorough', russian:'тщательный', level:'B2'}, {english:'aspect', russian:'аспект', level:'B2'},
+    {english:'core', russian:'ядро', level:'B2'}, {english:'bias', russian:'предубеждение', level:'B2'},
+    {english:'deduct', russian:'вычитать', level:'B2'}, {english:'feasible', russian:'осуществимый', level:'B2'},
+    {english:'ambiguous', russian:'неоднозначный', level:'B2'}, {english:'comprehensive', russian:'всесторонний', level:'B2'},
+    {english:'consequently', russian:'следовательно', level:'B2'}, {english:'contemporary', russian:'современный', level:'B2'}
+];
+
+// СИСТЕМА МОДУЛЕЙ (ПО ТЕМАМ) - ТЕПЕРЬ ОНИ ЗДЕСЬ!
+var MODULES = [
+    { id: 'present', name: 'Present Simple', level: 'A1', 
+      rule: '<p><b>Когда использовать Present Simple?</b></p><ul><li>Для <b>фактов</b>: The Sun rises in the east.</li><li>Для <b>регулярных действий</b>: I drink coffee every day.</li><li>Для <b>расписаний</b>: The train leaves at 9 am.</li></ul><p><b>Формула:</b> Подлежащее + Глагол.</p><p><b>Главное правило:</b> Для He/She/It добавляем <b>-s</b>! She works.</p>' },
+    { id: 'past', name: 'Past Simple', level: 'A1', 
+      rule: '<p><b>Когда использовать Past Simple?</b></p><p>Для действий, которые <b>произошли и закончились в прошлом</b> (вчера, на прошлой неделе).</p><p><b>Формула:</b> Правильные глаголы + <b>-ed</b> (watch → watched). Неправильные глаголы меняются (go → went).</p>' },
+    { id: 'future', name: 'Future Simple', level: 'A1', 
+      rule: '<p><b>Когда использовать Future Simple?</b></p><p>Для <b>предсказаний</b>, <b>обещаний</b> и <b>спонтанных решений</b>.</p><p><b>Формула:</b> Подлежащее + <b>will</b> + Глагол.</p><p>Пример: I will call you tomorrow.</p>' },
+    { id: 'continuous', name: 'Present Continuous', level: 'A1', 
+      rule: '<p><b>Когда использовать Present Continuous?</b></p><p>Когда действие происходит <b>прямо сейчас</b> или в данный период времени.</p><p><b>Формула:</b> am/is/are + Глагол + <b>-ing</b>.</p><p>Пример: I am reading a book now.</p>' },
+    { id: 'perfect', name: 'Present Perfect', level: 'A2', 
+      rule: '<p><b>Когда использовать Present Perfect?</b></p><p>Когда есть <b>результат сейчас</b> от действия в прошлом.</p><p><b>Формула:</b> have/has + 3-я форма глагола.</p><p>Пример: I have finished my homework.</p>' },
+    { id: 'articles', name: 'Articles (a/an/the)', level: 'A1', 
+      rule: '<p><b>Артикли</b></p><ul><li><b>a</b> — перед согласными (a cat).</li><li><b>an</b> — перед гласными (an apple).</li><li><b>the</b> — для конкретных вещей (the Sun).</li></ul>' },
+    { id: 'prepositions', name: 'Prepositions (in/at/on)', level: 'A2', 
+      rule: '<p><b>Предлоги</b></p><ul><li><b>in</b> — внутри (in Moscow).</li><li><b>on</b> — на поверхности (on the table).</li><li><b>at</b> — у точки / точное время (at 7 o\'clock).</li></ul>' },
+    { id: 'modal', name: 'Modal Verbs (can/must)', level: 'A2', 
+      rule: '<p><b>Модальные глаголы</b></p><ul><li><b>can</b> — умею/могу (I can swim).</li><li><b>must</b> — должен (You must study).</li><li><b>should</b> — совет (You should rest).</li></ul>' }
+];
+
+// БОЛЬШАЯ БАЗА ТЕСТОВ (Без повторов внутри сессии)
+var QUESTION_BANK = {
+    'present': [
+        { type: 'mcq', q: 'She ___ English every day.', o: ['study', 'studies', 'studying'], c: 1 },
+        { type: 'mcq', q: 'I ___ coffee in the morning.', o: ['drink', 'drinks', 'drinking'], c: 0 },
+        { type: 'mcq', q: 'He ___ football on Sundays.', o: ['play', 'plays', 'playing'], c: 1 },
+        { type: 'mcq', q: 'We ___ to school every day.', o: ['go', 'goes', 'going'], c: 0 },
+        { type: 'build', words: ['She', 'works', 'every', 'day'], correct: 'She works every day' },
+        { type: 'build', words: ['We', 'go', 'to', 'school'], correct: 'We go to school' }
+    ],
+    'past': [
+        { type: 'mcq', q: 'Yesterday I ___ a movie.', o: ['watch', 'watched', 'watching'], c: 1 },
+        { type: 'mcq', q: 'She ___ her homework.', o: ['do', 'did', 'done'], c: 1 },
+        { type: 'mcq', q: 'We ___ to Paris in 2020.', o: ['go', 'went', 'gone'], c: 1 },
+        { type: 'mcq', q: 'He ___ me a gift.', o: ['give', 'gave', 'given'], c: 1 },
+        { type: 'build', words: ['We', 'went', 'to', 'Paris'], correct: 'We went to Paris' },
+        { type: 'build', words: ['He', 'gave', 'me', 'a', 'gift'], correct: 'He gave me a gift' }
+    ],
+    'future': [
+        { type: 'mcq', q: 'I ___ you tomorrow.', o: ['call', 'will call', 'calling'], c: 1 },
+        { type: 'mcq', q: 'It ___ rain soon.', o: ['will', 'is', 'was'], c: 0 },
+        { type: 'mcq', q: 'She ___ a doctor.', o: ['be', 'will be', 'was'], c: 1 },
+        { type: 'build', words: ['She', 'will', 'be', 'a', 'doctor'], correct: 'She will be a doctor' },
+        { type: 'build', words: ['They', 'will', 'get', 'married'], correct: 'They will get married' }
+    ],
+    'continuous': [
+        { type: 'mcq', q: 'She ___ a book now.', o: ['reads', 'is reading', 'read'], c: 1 },
+        { type: 'mcq', q: 'I ___ English at the moment.', o: ['study', 'am studying', 'studied'], c: 1 },
+        { type: 'mcq', q: 'We ___ dinner now.', o: ['have', 'are having', 'had'], c: 1 },
+        { type: 'build', words: ['They', 'are', 'playing', 'football'], correct: 'They are playing football' },
+        { type: 'build', words: ['He', 'is', 'watching', 'TV'], correct: 'He is watching TV' }
+    ],
+    'perfect': [
+        { type: 'mcq', q: 'I ___ my homework.', o: ['did', 'have done', 'do'], c: 1 },
+        { type: 'mcq', q: 'She ___ to London.', o: ['went', 'has been', 'go'], c: 1 },
+        { type: 'mcq', q: 'We ___ the movie.', o: ['see', 'have seen', 'saw'], c: 1 },
+        { type: 'build', words: ['He', 'has', 'finished', 'his', 'work'], correct: 'He has finished his work' },
+        { type: 'build', words: ['We', 'have', 'seen', 'the', 'movie'], correct: 'We have seen the movie' }
+    ],
+    'articles': [
+        { type: 'mcq', q: 'I have ___ apple.', o: ['a', 'an', 'the'], c: 1 },
+        { type: 'mcq', q: 'She has ___ car.', o: ['a', 'an', 'the'], c: 0 },
+        { type: 'mcq', q: '___ Sun is bright.', o: ['A', 'An', 'The'], c: 2 },
+        { type: 'build', words: ['The', 'Sun', 'is', 'bright'], correct: 'The Sun is bright' },
+        { type: 'build', words: ['He', 'is', 'an', 'honest', 'man'], correct: 'He is an honest man' }
+    ],
+    'prepositions': [
+        { type: 'mcq', q: 'The cat is ___ the table.', o: ['in', 'at', 'on'], c: 2 },
+        { type: 'mcq', q: 'I wake up ___ 7 o\'clock.', o: ['in', 'at', 'on'], c: 1 },
+        { type: 'mcq', q: 'She lives ___ Moscow.', o: ['in', 'at', 'on'], c: 0 },
+        { type: 'build', words: ['She', 'lives', 'in', 'Moscow'], correct: 'She lives in Moscow' },
+        { type: 'build', words: ['The', 'book', 'is', 'on', 'the', 'table'], correct: 'The book is on the table' }
+    ],
+    'modal': [
+        { type: 'mcq', q: 'You ___ wear a seat belt.', o: ['can', 'must', 'may'], c: 1 },
+        { type: 'mcq', q: 'I ___ swim well.', o: ['can', 'must', 'should'], c: 0 },
+        { type: 'mcq', q: 'You ___ study harder.', o: ['can', 'must', 'should'], c: 2 },
+        { type: 'build', words: ['You', 'must', 'study', 'harder'], correct: 'You must study harder' },
+        { type: 'build', words: ['We', 'should', 'help', 'others'], correct: 'We should help others' }
+    ]
+};
+
+// ФУНКЦИИ ВХОДА
+function chooseLevel(btn, level) {
+    var btns = document.querySelectorAll('.level-select button');
+    for(var i=0; i<btns.length; i++) { btns[i].classList.remove('active'); }
+    btn.classList.add('active');
+    currentUserLevel = level;
+}
+
+function enterApp() {
+    var name = document.getElementById('profileInput').value;
+    if(!name || name.trim() === '') { alert('Введите имя.'); return; }
+    profileName = name.trim();
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadUserData();
+}
+
+function getLevelIndex(lvl) {
+    for(var i=0; i<LEVELS.length; i++) { if(LEVELS[i] === lvl) return i; }
+    return 0;
+}
+
+function loadUserData() {
+    var p = profileName + '_';
+    xp = Number(localStorage.getItem(p + 'xp')) || 0;
+    levelIndex = Number(localStorage.getItem(p + 'level')) || getLevelIndex(currentUserLevel);
+    streak = Number(localStorage.getItem(p + 'streak')) || 0;
+    lastVisit = localStorage.getItem(p + 'lastVisit') || '';
+    know = Number(localStorage.getItem(p + 'know')) || 0;
+    learnedWords = JSON.parse(localStorage.getItem(p + 'learnedWords')) || [];
+    hardWords = JSON.parse(localStorage.getItem(p + 'hardWords')) || [];
+
+    // Загружаем слова, доступные для текущего уровня
+    words = [];
+    for(var i=0; i<FULL_WORD_BANK.length; i++) {
+        var w = FULL_WORD_BANK[i];
+        if(getLevelIndex(w.level) <= levelIndex) { words.push(w); }
+    }
+    if(words.length === 0) { words = FULL_WORD_BANK.slice(0, 30); }
+    
+    document.getElementById('word').innerHTML = words.length ? words[0].english : 'Загружаем...';
+    updateUI();
+    renderModules();
+}
+
+// ОТРИСОВКА МОДУЛЕЙ
+function renderModules() {
+    var container = document.getElementById('topicList');
+    container.innerHTML = '';
+    var availableModules = [];
+    
+    for(var i=0; i<MODULES.length; i++) {
+        var mod = MODULES[i];
+        var modLevelIndex = getLevelIndex(mod.level);
+        if(modLevelIndex <= levelIndex && modLevelIndex >= 0) {
+            availableModules.push(mod);
+        }
+    }
+
+    for(var i=0; i<availableModules.length; i++) {
+        var mod = availableModules[i];
+        var btn = document.createElement('button');
+        btn.className = 'btn-outline';
+        btn.innerHTML = '📖 ' + mod.name;
+        btn.onclick = (function(id) { return function() { startModule(id); }; })(mod.id);
+        container.appendChild(btn);
+    }
+    if(availableModules.length === 0) {
+        container.innerHTML = '<p style="color: #94a3b8; text-align: center;">Модули для этого уровня в разработке.</p>';
+    }
+}
+
+// НАВИГАЦИЯ
+function openTab(tab) {
+    var sections = document.querySelectorAll('.section');
+    for(var i=0; i<sections.length; i++) { sections[i].classList.remove('active'); }
+    document.getElementById(tab + 'Section').classList.add('active');
+    var navBtns = document.querySelectorAll('.nav-btn');
+    for(var i=0; i<navBtns.length; i++) { navBtns[i].classList.remove('active'); }
+    if(event && event.target) {
+        var target = event.target;
+        while(target && !target.classList.contains('nav-btn')) { target = target.parentNode; }
+        if(target) target.classList.add('active');
+    }
+}
+
+function updateUI() {
+    document.getElementById('userLevelText').innerHTML = LEVELS[levelIndex];
+    document.getElementById('xpText').innerHTML = String(xp);
+    document.getElementById('learnedCountText').innerHTML = String(know);
+    document.getElementById('streakText').innerHTML = String(streak);
+    
+    var currentLevelName = LEVELS[levelIndex];
+    var modulesDone = Math.floor(xp / 10);
+    var totalModules = 0;
+    for(var i=0; i<MODULES.length; i++) {
+        if(getLevelIndex(MODULES[i].level) <= levelIndex) totalModules++;
+    }
+    
+    var barPercent = 0;
+    if(totalModules > 0) {
+        barPercent = (modulesDone / totalModules) * 100;
+        if(barPercent > 100) barPercent = 100;
+    }
+    document.getElementById('xpFill').style.width = String(barPercent) + '%';
+    
+    var progressEl = document.getElementById('progressToNext');
+    if(levelIndex >= LEVELS.length - 1) {
+        progressEl.innerHTML = 'Вы достигли максимума!';
+    } else {
+        var left = totalModules - modulesDone;
+        if(left < 0) left = 0;
+        progressEl.innerHTML = 'До след. уровня (' + LEVELS[levelIndex + 1] + '): пройдите <b>' + String(left) + '</b> модулей.';
+    }
+}
+
+function addXP(amount) {
+    xp = xp + amount;
+    var p = profileName + '_';
+    localStorage.setItem(p + 'xp', String(xp));
+    updateUI();
+}
+
+// МОДУЛЬНЫЕ УРОКИ (Без повторений внутри модуля)
+var currentModuleId = '';
+var moduleQuestions = [];
+var moduleIndex = 0;
+var moduleScore = 0;
+var isModuleFinished = false;
+var moduleUsedQuestions = [];
+
+function startModule(id) {
+    currentModuleId = id;
+    moduleIndex = 0;
+    moduleScore = 0;
+    isModuleFinished = false;
+    
+    // Перемешиваем и берем все вопросы модуля
+    var rawList = QUESTION_BANK[id].slice();
+    rawList.sort(function() { return Math.random() - 0.5; });
+    moduleQuestions = rawList;
+    moduleUsedQuestions = [];
+    
+    showModuleQuestion();
+}
+
+function showModuleQuestion() {
+    var box = document.getElementById('grammarBox');
+    
+    // Если вопросы закончились, перемешиваем оставшиеся (для бесконечности без повторов)
+    if (moduleIndex >= moduleQuestions.length) {
+        box.innerHTML = 
+            '<h3 style="color: #6366f1;">Модуль пройден! Отлично!</h3>' +
+            '<p style="text-align: center; font-size: 24px; margin: 20px 0;">Результат: <b>' + String(moduleScore) + '</b> правильных ответов.</p>' +
+            '<button class="btn-primary" onclick="startModule(\'' + currentModuleId + '\')" style="width: auto; padding: 10px 30px; margin: 0 auto; display: block;">🔄 Пройти заново</button>';
+        return;
+    }
+
+    var q = moduleQuestions[moduleIndex];
+    var topicName = '';
+    for(var i=0; i<MODULES.length; i++) {
+        if(MODULES[i].id === currentModuleId) {
+            topicName = MODULES[i].name;
+            break;
+        }
+    }
+
+    // Сборка предложения
+    if(q.type === 'build') {var shuffledWords = q.words.slice();
+        shuffledWords.sort(function() { return Math.random() - 0.5; });
+        var html = 
+            '<h3 style="color: #6366f1; margin-bottom: 10px;">' + topicName + ' (Собери предложение)</h3>' +
+            '<div id="builderWords" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 10px 0;">';
+        for(var i=0; i<shuffledWords.length; i++) {
+            html += '<button class="btn-outline" onclick="addToSentence(this, \'' + shuffledWords[i] + '\')" style="width: auto; padding: 8px 16px; font-size: 18px;">' + shuffledWords[i] + '</button>';
+        }
+        html += '</div>' +
+            '<div id="sentenceResult" style="font-size: 24px; font-weight: bold; text-align: center; min-height: 40px;"></div>' +
+            '<div class="grid-2" style="margin-top: 10px;">' +
+                '<button class="btn-warning" onclick="clearSentence()">Очистить</button>' +
+                '<button class="btn-primary" onclick="checkSentence(\'' + q.correct + '\')">Проверить</button>' +
+            '</div>' +
+            '<div id="moduleFeedback" style="margin-top: 10px; font-weight: bold; text-align: center;"></div>';
+        box.innerHTML = html;
+        window._sentenceParts = [];
+        
+    } else { // MCQ тест
+        var html = 
+            '<h3 style="color: #6366f1; margin-bottom: 10px;">' + topicName + '</h3>' +
+            '<button class="btn-ai" onclick="toggleRule()">🧠 Показать правило</button>' +
+            '<div id="explainBox">' + MODULES.find(m => m.id === currentModuleId).rule + '</div>' +
+            '<p style="font-size: 18px; margin: 15px 0;"><b>' + q.q + '</b></p>' +
+            '<div id="grammarOptions">' +
+                '<button class="quiz-btn" onclick="checkModuleAnswer(this, 0)">' + q.o[0] + '</button>' +
+                '<button class="quiz-btn" onclick="checkModuleAnswer(this, 1)">' + q.o[1] + '</button>' +
+                '<button class="quiz-btn" onclick="checkModuleAnswer(this, 2)">' + q.o[2] + '</button>' +
+            '</div>' +
+            '<div id="moduleFeedback" style="margin-top: 10px; font-weight: bold; text-align: center;"></div>';
+        box.innerHTML = html;
+    }
+}
+
+function toggleRule() {
+    var box = document.getElementById('explainBox');
+    box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+}
+
+function checkModuleAnswer(btnElement, selectedIndex) {
+    if (isModuleFinished) return;
+    var q = moduleQuestions[moduleIndex];
+    var allBtns = document.querySelectorAll('#grammarOptions .quiz-btn');
+    var feedback = document.getElementById('moduleFeedback');
+    
+    for(var i=0; i<allBtns.length; i++) { allBtns[i].disabled = true; }
+    
+    if (selectedIndex === q.c) {
+        btnElement.className = btnElement.className + ' correct';
+        feedback.innerHTML = '✅ Правильно! +10 XP';
+        feedback.style.color = '#22c55e';
+        moduleScore++;
+        addXP(10);
+    } else {
+        btnElement.className = btnElement.className + ' wrong';
+        allBtns[q.c].className = allBtns[q.c].className + ' correct';
+        feedback.innerHTML = '❌ Неправильно. Правильный ответ: ' + q.o[q.c];
+        feedback.style.color = '#ef4444';
+    }
+    isModuleFinished = true;
+    setTimeout(function() {
+        isModuleFinished = false;
+        moduleIndex++;
+        showModuleQuestion();
+    }, 1200);
+}
+
+// СБОРКА ПРЕДЛОЖЕНИЯ
+var _sentenceParts = [];
+
+function addToSentence(btn, word) {
+    var result = document.getElementById('sentenceResult');
+    _sentenceParts.push(word);
+    result.innerHTML = _sentenceParts.join(' ');
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+}
+
+function clearSentence() {
+    _sentenceParts = [];
+    document.getElementById('sentenceResult').innerHTML = '';
+    var btns = document.querySelectorAll('#builderWords button');
+    for(var i=0; i<btns.length; i++) { btns[i].disabled = false; btns[i].style.opacity = '1'; }
+    document.getElementById('moduleFeedback').innerHTML = '';
+}
+
+function checkSentence(correct) {
+    if (isModuleFinished) return;
+    var feedback = document.getElementById('moduleFeedback');
+    var result = document.getElementById('sentenceResult').innerHTML.trim();
+    if(result === correct) {
+        feedback.innerHTML = '✅ Идеально! +10 XP';
+        feedback.style.color = '#22c55e';
+        moduleScore++;
+        addXP(10);
+    } else {
+        feedback.innerHTML = '❌ Неправильно. Правильно: ' + correct;
+        feedback.style.color = '#ef4444';
+    }
+    var btns = document.querySelectorAll('#builderWords button');
+    for(var i=0; i<btns.length; i++) { btns[i].disabled = true; }
+    isModuleFinished = true;
+    setTimeout(function() {
+        isModuleFinished = false;
+        moduleIndex++;
+        showModuleQuestion();
+    }, 1500);
+}
+
+// --- МИНИ-ИГРЫ (Без повторов) ---
+var gameMode = '';
+var gameScore = 0;
+var gameActive = false;
+var gameQuestionPool = [];
+var gameQuestionIndex = 0;
+
+function startGame(mode) {
+    gameMode = mode;
+    gameScore = 0;
+    gameActive = true;
+    gameQuestionIndex = 0;
+    document.getElementById('stopPracticeBtn').style.display = 'block';
+    
+    // Создаем пул вопросов в зависимости от игры
+    if(mode === 'guess') {
+        gameQuestionPool = words.slice();
+        gameQuestionPool.sort(function() { return Math.random() - 0.5; });
+    } else if(mode === 'truefalse') {
+        var statements = [
+            { text: '"She go" — это правильно.', correct: false },
+            { text: '"He works" — это правильно.', correct: true },
+            { text: '"I drink coffee" — это правильно.', correct: true },
+            { text: '"She don\'t like" — это правильно.', correct: false },
+            { text: '"We goes" — это правильно.', correct: false }
+        ];
+        gameQuestionPool = statements.slice();
+        gameQuestionPool.sort(function() { return Math.random() - 0.5; });
+    } else if(mode === 'wordornot') {
+        // Смесь настоящих и выдуманных слов
+        var pool = [];
+        for(var i=0; i<words.length; i++) { pool.push({ word: words[i].english, isReal: true }); }
+        var fakeWords = ['floob', 'zarg', 'plim', 'cronk', 'snorp', 'wibble', 'glorp'];
+        for(var i=0; i<fakeWords.length; i++) { pool.push({ word: fakeWords[i], isReal: false }); }
+        gameQuestionPool = pool.slice();
+        gameQuestionPool.sort(function() { return Math.random() - 0.5; });
+    }
+    
+    nextGameRound();
+}
+
+function stopPractice() {
+    gameActive = false;
+    document.getElementById('stopPracticeBtn').style.display = 'none';
+    document.getElementById('practiceBox').innerHTML = '<p style="text-align: center; color: #94a3b8;">Игра остановлена. Счет: ' + String(gameScore) + '</p>';
+}
+
+function nextGameRound() {
+    if(!gameActive) return;
+    var box = document.getElementById('practiceBox');
+    
+    // Если вопросы закончились, перемешиваем заново и начинаем сначала
+    if (gameQuestionIndex >= gameQuestionPool.length) {
+        gameQuestionPool.sort(function() { return Math.random() - 0.5; });
+        gameQuestionIndex = 0;
+    }
+
+    var q = gameQuestionPool[gameQuestionIndex];
+    gameQuestionIndex++;
+    
+    if(gameMode === 'guess') {
+        var correct = q;
+        var options = [correct.russian];
+        while(options.length < 4) {
+            var rand = words[Math.floor(Math.random() * words.length)];
+            var found = false;
+            for(var i=0; i<options.length; i++) { if(options[i] === rand.russian) { found = true; break; } }
+            if(!found) options.push(rand.russian);
+        }
+        options.sort(function() { return Math.random() - 0.5; });
+        var html = 
+            '<h3 style="text-align: center; font-size: 28px; margin: 15px 0;">' + correct.english + '</h3>' +
+            '<div id="gameOptions">' +
+                '<button class="word-option-btn" onclick="checkGameAnswer(this, \'' + options[0] + '\', \'' + correct.russian + '\')">' + options[0] + '</button>' +
+                '<button class="word-option-btn" onclick="checkGameAnswer(this, \'' + options[1] + '\', \'' + correct.russian + '\')">' + options[1] + '</button>' +
+                '<button class="word-option-btn" onclick="checkGameAnswer(this, \'' + options[2] + '\', \'' + correct.russian + '\')">' + options[2] + '</button>' +
+                '<button class="word-option-btn" onclick="checkGameAnswer(this, \'' + options[3] + '\', \'' + correct.russian + '\')">' + options[3] + '</button>' +
+            '</div>' +
+            '<div id="gameFeedback" style="margin-top: 10px; font-weight: bold; text-align: center;"></div>' +
+            '<div style="text-align: center; margin-top: 10px; color: #94a3b8;">Счет: ' + String(gameScore) + '</div>';
+        box.innerHTML = html;
+        
+    } else if(gameMode === 'wordornot') {
+        var html = 
+            '<h3 style="text-align: center; font-size: 28px; margin: 15px 0;">' + q.word + '</h3>' +
+            '<div class="grid-2">' +
+                '<button class="btn-success" onclick="checkWordOrNot(this, true, ' + (q.isReal ? 'true' : 'false') + ')">ДА</button>' +
+                '<button class="btn-danger" onclick="checkWordOrNot(this, false, ' + (q.isReal ? 'true' : 'false') + ')">НЕТ</button>' +
+            '</div>' +
+            '<div id="gameFeedback" style="margin-top: 10px; font-weight: bold; text-align: center;"></div>' +
+            '<div style="text-align: center; margin-top: 10px; color: #94a3b8;">Счет: ' + String(gameScore) + '</div>';
+        box.innerHTML = html;
+        
+    } else if(gameMode === 'truefalse') {
+        var html = 
+            '<h3 style="text-align: center; font-size: 20px; margin: 15px 0;">' + q.text + '</h3>' +
+            '<div class="grid-2">' +
+                '<button class="btn-success" onclick="checkTrueFalse(this, true, ' + (q.correct ? 'true' : 'false') + ')">ПРАВДА</button>' +
+                '<button class="btn-danger" onclick="checkTrueFalse(this, false, ' + (q.correct ? 'true' : 'false') + ')">ЛОЖЬ</button>' +
+            '</div>' +
+            '<div id="gameFeedback" style="margin-top: 10px; font-weight: bold; text-align: center;"></div>' +
+            '<div style="text-align: center; margin-top: 10px; color: #94a3b8;">Счет: ' + String(gameScore) + '</div>';
+        box.innerHTML = html;
+    }
+}
+
+// ИГРА: Угадай перевод
+function checkGameAnswer(btn, selected, correct) {
+    if(!gameActive) return;
+    var allBtns = document.querySelectorAll('#gameOptions .word-option-btn');
+    var feedback = document.getElementById('gameFeedback');
+    for(var i=0; i<allBtns.length; i++) allBtns[i].disabled = true;
+    if(selected === correct) {
+        btn.className = btn.className + ' correct';
+        feedback.innerHTML = '✅ Верно! +5 XP';
+        feedback.style.color = '#22c55e';
+        gameScore++;
+        addXP(5);
+    } else {
+        btn.className = btn.className + ' wrong';
+        for(var i=0; i<allBtns.length; i++) { if(allBtns[i].innerHTML === correct) allBtns[i].className = allBtns[i].className + ' correct'; }
+        feedback.innerHTML = '❌ Неверно. Правильно: ' + correct;
+        feedback.style.color = '#ef4444';
+    }
+    setTimeout(function() { if(gameActive) nextGameRound(); }, 1200);
+}
+
+// ИГРА: Слово или нет
+function checkWordOrNot(btn, selected, isReal) {
+    if(!gameActive) return;
+    var feedback = document.getElementById('gameFeedback');
+    var allBtns = document.querySelectorAll('#practiceBox .btn-success, #practiceBox .btn-danger');
+    for(var i=0; i<allBtns.length; i++) allBtns[i].disabled = true;
+    if(selected === isReal) {
+        btn.className = btn.className + ' correct';
+        feedback.innerHTML = '✅ Верно! +5 XP';
+        feedback.style.color = '#22c55e';
+        gameScore++;
+        addXP(5);
+    } else {
+        btn.className = btn.className + ' wrong';
+        feedback.innerHTML = '❌ Неверно. Слово было: ' + (isReal ? 'НАСТОЯЩЕЕ' : 'ВЫДУМАННОЕ');
+        feedback.style.color = '#ef4444';
+    }
+    setTimeout(function() { if(gameActive) nextGameRound(); }, 1200);
+}
+
+// ИГРА: Правда или ложь
+function checkTrueFalse(btn, selected, isTrue) {
+    if(!gameActive) return;
+    var feedback = document.getElementById('gameFeedback');
+    var allBtns = document.querySelectorAll('#practiceBox .btn-success, #practiceBox .btn-danger');
+    for(var i=0; i<allBtns.length; i++) allBtns[i].disabled = true;
+    if(selected === isTrue) {
+        btn.className = btn.className + ' correct';
+        feedback.innerHTML = '✅ Верно! +5 XP';
+        feedback.style.color = '#22c55e';
+        gameScore++;
+        addXP(5);
+    } else {
+        btn.className = btn.className + ' wrong';
+        feedback.innerHTML = '❌ Неверно. ' + (isTrue ? 'Это правда.' : 'Это ложь.');
+        feedback.style.color = '#ef4444';
+    }
+    setTimeout(function() { if(gameActive) nextGameRound(); }, 1200);
+}
+
+// СЛОВА
+function showTranslation() {
+    if (!words.length) { document.getElementById('word').innerHTML = 'Нет слов'; return; }
+    document.getElementById('translation').innerHTML = words[current].russian;
+}
+function nextWord() {
+    if (isProcessing) return;
+    isProcessing = true;
+    if (!words.length) { document.getElementById('word').innerHTML = 'Нет слов'; isProcessing = false; return; }
+    current = (current + 1) % words.length;
+    document.getElementById('word').innerHTML = words[current].english;
+    document.getElementById('translation').innerHTML = '';
+    isProcessing = false;
+}
+function knowWord() {
+    if (isProcessing || words.length === 0) return;
+    isProcessing = true;
+    var p = profileName + '_';
+    know++;
+    localStorage.setItem(p + 'know', String(know));
+    var found = false;
+    for(var i=0; i<learnedWords.length; i++) { if(learnedWords[i] === words[current].english) { found = true; break; } }
+    if(!found) {
+        learnedWords.push(words[current].english);
+        localStorage.setItem(p + 'learnedWords', JSON.stringify(learnedWords));
+    }
+    updateUI();
+    current = (current + 1) % words.length;
+    document.getElementById('word').innerHTML = words[current].english;
+    document.getElementById('translation').innerHTML = '';
+    setTimeout(function() { isProcessing = false; }, 200);
+}
+function dontKnowWord() {
+    if (isProcessing || words.length === 0) return;
+    isProcessing = true;
+    var p = profileName + '_';
+    hardWords.push(words[current]);
+    localStorage.setItem(p + 'hardWords', JSON.stringify(hardWords));
+    updateUI();
+    current = (current + 1) % words.length;
+    document.getElementById('word').innerHTML = words[current].english;
+    document.getElementById('translation').innerHTML = '';
+    setTimeout(function() { isProcessing = false; }, 200);
+}
+function speakWord() {
+    if (!words.length) return;
+    var speech = new SpeechSynthesisUtterance(words[current].english);
+    speech.lang = 'en-US'; speech.rate = 0.9;
+    window.speechSynthesis.speak(speech);
+}
+
+// СТРЕЙК И ЗАПУСК
+function checkDailyStreak() {
+    var p = profileName + '_';
+    var today = new Date().toDateString();
+    if (lastVisit !== today) {
+        if (lastVisit !== '') { streak++; }
+        lastVisit = today;
+        localStorage.setItem(p + 'streak', String(streak));
+        localStorage.setItem(p + 'lastVisit', lastVisit);
+    }
+}
+
+checkDailyStreak();
+</script>
+</body>
+</html>
